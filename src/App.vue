@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import BreweryList from './components/BreweryList.vue'
+  import BreweryList from "./components/BreweryList.vue";
 </script>
 
 <template>
@@ -13,5 +13,4 @@ import BreweryList from './components/BreweryList.vue'
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
