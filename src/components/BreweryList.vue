@@ -1,10 +1,20 @@
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 
+// Define the brewery interface
+interface Brewery {
+  id: string;
+  name: string;
+  brewery_type: string;
+  city: string;
+  state: string;
+  website_url: string | null;
+}
+
 // State to store the brewery data
-const breweries = ref([]);
-const loading = ref(true);
-const error = ref(null);
+const breweries = ref<Brewery[]>([]);
+const loading = ref<boolean>(true);
+const error = ref<string | null>(null);
 
 // Function to fetch breweries from the API
 const fetchBreweries = async () => {
@@ -18,7 +28,7 @@ const fetchBreweries = async () => {
 
     const data = await response.json();
     breweries.value = data;
-  } catch (err) {
+  } catch (err: any) {
     error.value = err.message || 'Failed to fetch breweries';
     console.error('Error fetching breweries:', err);
   } finally {
@@ -77,5 +87,4 @@ onMounted(fetchBreweries);
 </template>
 
 <style scoped>
-/* Tailwind classes are used instead of these styles */
 </style>

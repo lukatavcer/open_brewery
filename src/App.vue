@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 import BreweryList from './components/BreweryList.vue'
 </script>
 
@@ -14,5 +14,4 @@ import BreweryList from './components/BreweryList.vue'
 </template>
 
 <style scoped>
-/* Tailwind classes are used instead of these styles */
 </style>
