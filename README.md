@@ -11,6 +11,10 @@ A Vue.js application that connects to the Open Brewery API, retrieves brewery da
 - Grouping: Group items by a relevant attribute (e.g., brewery type, etc.) and display grouped totals or subtotals.
 - Include a simple chart to visualize the grouped data (pie chart, bar chart, etc.).
 
+## Live Demo
+
+The site is available at: https://lukatavcer.github.io/open_brewery/
+
 ## Project Setup
 
 ```sh
