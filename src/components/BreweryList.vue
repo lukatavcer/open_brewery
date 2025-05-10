@@ -40,6 +40,21 @@
             </option>
           </select>
         </div>
+        <div class="flex-1">
+          <label for="type-filter" class="block text-sm font-medium text-gray-700 mb-1">
+            Group by
+          </label>
+          <select
+            id="group-by"
+            v-model="groupBy"
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option :value="undefined">--</option>
+            <option v-for="option in groupByOptions" :key="option" :value="option">
+              {{ option }}
+            </option>
+          </select>
+        </div>
         <div class="flex items-end">
           <button
             @click="resetFilters"
@@ -49,10 +64,10 @@
           </button>
         </div>
       </div>
-
       <!-- Results count -->
       <div class="mb-4 text-sm text-gray-600">
-        Showing {{ filteredBreweries.length }} of {{ allBreweries.length }} breweries
+        Showing {{ filteredBreweries.length }} of {{ allBreweries.length }}
+        {{ pluralizeBrewery(allBreweries.length) }}
       </div>
 
       <!-- Breweries table -->
@@ -68,28 +83,28 @@
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="brewery in filteredBreweries"
-              :key="brewery.id"
-              class="hover:bg-gray-50 border-t border-gray-200"
-            >
-              <td class="py-3 px-4">{{ brewery.name }}</td>
-              <td class="py-3 px-4">{{ brewery.brewery_type }}</td>
-              <td class="py-3 px-4">{{ brewery.city }}</td>
-              <td class="py-3 px-4">{{ brewery.state }}</td>
-              <td class="py-3 px-4">
-                <a
-                  v-if="brewery.website_url"
-                  :href="brewery.website_url"
-                  target="_blank"
-                  rel="noopener"
-                  class="text-blue-600 hover:underline"
-                >
-                  {{ brewery.website_url }}
-                </a>
-                <span v-else class="text-gray-500">N/A</span>
-              </td>
-            </tr>
+            <template v-if="groupBy">
+              <template v-for="[group, breweriesList] in Object.entries(groupedBreweries)">
+                <tr class="bg-gray-200">
+                  <td colspan="5" class="py-2 px-4 font-bold text-gray-800">
+                    {{ groupBy }}: {{ group }} ({{ breweriesList.length
+                    }}{{ pluralizeBrewery(breweriesList.length) }})
+                  </td>
+                </tr>
+                <BreweryRow
+                  v-for="brewery in breweriesList"
+                  :key="brewery.id"
+                  :brewery="brewery"
+                ></BreweryRow>
+              </template>
+            </template>
+            <template v-else>
+              <BreweryRow
+                v-for="brewery in filteredBreweries"
+                :key="brewery.id"
+                :brewery="brewery"
+              ></BreweryRow>
+            </template>
           </tbody>
         </table>
       </div>
@@ -99,6 +114,7 @@
 
 <script setup lang="ts">
   import { ref, onMounted, computed } from "vue";
+  import BreweryRow from "./BreweryRow.vue";
   import { Brewery } from "../types/brewery";
 
   // State to store the brewery data
@@ -108,6 +124,8 @@
   const error = ref<string | null>(null);
 
   // Filtering state
+  const groupByOptions: (keyof Brewery)[] = ["brewery_type", "city", "state"];
+  const groupBy = ref<keyof Brewery | undefined>(undefined);
   const nameFilter = ref<string>("");
   const typeFilter = ref<string>("all");
 
@@ -130,10 +148,28 @@
     });
   });
 
+  // Grouping: Group items by a relevant attribute (e.g., brewery type, etc.) and display grouped totals or subtotals.
+  const groupedBreweries = computed(() => {
+    if (!groupBy.value) return {};
+
+    return filteredBreweries.value.reduce((groups: Record<string, Brewery[]>, brewery) => {
+      const key = String(brewery[groupBy.value as keyof Brewery] ?? "Unknown");
+      if (!groups[key]) {
+        groups[key] = [];
+      }
+      groups[key].push(brewery);
+      return groups;
+    }, {});
+  });
+
   // Reset filters
   const resetFilters = () => {
     nameFilter.value = "";
     typeFilter.value = "all";
+  };
+
+  const pluralizeBrewery = (count: number): string => {
+    return count === 1 ? "brewery" : "breweries";
   };
 
   // Function to fetch breweries from the API
@@ -147,6 +183,7 @@
       }
 
       const data = await response.json();
+      console.log("Fetched breweries:", data);
       allBreweries.value = data;
       breweries.value = data;
     } catch (err: any) {
