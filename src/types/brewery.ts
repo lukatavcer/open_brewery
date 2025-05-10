@@ -5,5 +5,7 @@ export interface Brewery {
   brewery_type: string;
   city: string;
   state: string;
+  country: string;
+  phone: string;
   website_url: string | null;
 }

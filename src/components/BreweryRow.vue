@@ -4,6 +4,8 @@
     <td class="py-3 px-4">{{ brewery.brewery_type }}</td>
     <td class="py-3 px-4">{{ brewery.city }}</td>
     <td class="py-3 px-4">{{ brewery.state }}</td>
+    <td class="py-3 px-4">{{ brewery.country }}</td>
+    <td class="py-3 px-4">{{ brewery.phone }}</td>
     <td class="py-3 px-4">
       <a
         v-if="brewery.website_url"

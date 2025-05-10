@@ -75,18 +75,20 @@
         <table class="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
           <thead class="bg-gray-100">
             <tr>
-              <th class="py-3 px-4 text-left font-semibold text-gray-700">Name</th>
-              <th class="py-3 px-4 text-left font-semibold text-gray-700">Type</th>
-              <th class="py-3 px-4 text-left font-semibold text-gray-700">City</th>
-              <th class="py-3 px-4 text-left font-semibold text-gray-700">State</th>
-              <th class="py-3 px-4 text-left font-semibold text-gray-700">Website</th>
+              <th
+                class="py-3 px-4 text-left font-semibold text-gray-700"
+                v-for="(header, index) in tableHeaders"
+                :key="index"
+              >
+                {{ header }}
+              </th>
             </tr>
           </thead>
           <tbody>
             <template v-if="groupBy">
               <template v-for="[group, breweriesList] in Object.entries(groupedBreweries)">
                 <tr class="bg-gray-200">
-                  <td colspan="5" class="py-2 px-4 font-bold text-gray-800">
+                  <td :colspan="tableHeaders.length" class="py-2 px-4 font-bold text-gray-800">
                     {{ groupBy }}: {{ group }} ({{ breweriesList.length
                     }}{{ pluralizeBrewery(breweriesList.length) }})
                   </td>
@@ -122,9 +124,10 @@
   const allBreweries = ref<Brewery[]>([]);
   const loading = ref<boolean>(true);
   const error = ref<string | null>(null);
+  const tableHeaders = ["Name", "Type", "City", "State", "Country", "Phone", "Website"];
 
   // Filtering state
-  const groupByOptions: (keyof Brewery)[] = ["brewery_type", "city", "state"];
+  const groupByOptions: (keyof Brewery)[] = ["brewery_type", "city", "state", "country"];
   const groupBy = ref<keyof Brewery | undefined>(undefined);
   const nameFilter = ref<string>("");
   const typeFilter = ref<string>("all");
@@ -138,7 +141,7 @@
   // Apply filters to breweries
   const filteredBreweries = computed(() => {
     return allBreweries.value.filter(brewery => {
-      // Filter by name (case insensitive)
+      // Filter by name (case-insensitive)
       const nameMatch = brewery.name.toLowerCase().includes(nameFilter.value.toLowerCase());
 
       // Filter by type
