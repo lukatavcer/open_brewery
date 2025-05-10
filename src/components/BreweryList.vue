@@ -115,12 +115,12 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, computed } from "vue";
+  import { computed, onMounted, ref } from "vue";
   import BreweryRow from "./BreweryRow.vue";
   import { Brewery } from "../types/brewery";
+  import { fetchBreweries } from "../api/breweryService";
 
   // State to store the brewery data
-  const breweries = ref<Brewery[]>([]);
   const allBreweries = ref<Brewery[]>([]);
   const loading = ref<boolean>(true);
   const error = ref<string | null>(null);
@@ -175,30 +175,20 @@
     return count === 1 ? "brewery" : "breweries";
   };
 
-  // Function to fetch breweries from the API
-  const fetchBreweries = async () => {
+  // Load breweries data using the API service
+  const loadBreweries = async () => {
     try {
       loading.value = true;
-      const response = await fetch("https://api.openbrewerydb.org/v1/breweries");
-
-      if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("Fetched breweries:", data);
-      allBreweries.value = data;
-      breweries.value = data;
+      allBreweries.value = await fetchBreweries();
     } catch (err: any) {
       error.value = err.message || "Failed to fetch breweries";
-      console.error("Error fetching breweries:", err);
     } finally {
       loading.value = false;
     }
   };
 
   // Fetch breweries when the component is mounted
-  onMounted(fetchBreweries);
+  onMounted(loadBreweries);
 </script>
 
 <style scoped></style>
