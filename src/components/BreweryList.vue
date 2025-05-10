@@ -51,7 +51,7 @@
           >
             <option :value="undefined">--</option>
             <option v-for="option in groupByOptions" :key="option" :value="option">
-              {{ option }}
+              {{ formatFieldName(option) }}
             </option>
           </select>
         </div>
@@ -89,7 +89,7 @@
               <template v-for="[group, breweriesList] in Object.entries(groupedBreweries)">
                 <tr class="bg-gray-200">
                   <td :colspan="tableHeaders.length" class="py-2 px-4 font-bold text-gray-800">
-                    {{ groupBy }}: {{ group }} ({{ breweriesList.length
+                    {{ formatFieldName(groupBy) }}: {{ group }} ({{ breweriesList.length
                     }}{{ pluralizeBrewery(breweriesList.length) }})
                   </td>
                 </tr>
@@ -125,6 +125,14 @@
   const loading = ref<boolean>(true);
   const error = ref<string | null>(null);
   const tableHeaders = ["Name", "Type", "City", "State", "Country", "Phone", "Website"];
+
+  // Function to convert field names to user-friendly labels
+  const formatFieldName = (fieldName: string): string => {
+    return fieldName
+      .split("_")
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
   // Filtering state
   const groupByOptions: (keyof Brewery)[] = ["brewery_type", "city", "state", "country"];
