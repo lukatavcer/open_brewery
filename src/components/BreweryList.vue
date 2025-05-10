@@ -70,6 +70,42 @@
         {{ pluralizeBrewery(allBreweries.length) }}
       </div>
 
+      <!-- Chart visualization -->
+      <div v-if="groupBy" class="mb-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-lg font-medium text-gray-700">Data Visualization</h3>
+          <div class="flex space-x-2">
+            <button
+              @click="chartType = 'bar'"
+              class="px-3 py-1 text-sm rounded-md"
+              :class="
+                chartType === 'bar'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              "
+            >
+              Bar Chart
+            </button>
+            <button
+              @click="chartType = 'pie'"
+              class="px-3 py-1 text-sm rounded-md"
+              :class="
+                chartType === 'pie'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              "
+            >
+              Pie Chart
+            </button>
+          </div>
+        </div>
+        <BreweryChart
+          :grouped-data="groupedBreweries"
+          :group-by="groupBy"
+          :chart-type="chartType"
+        />
+      </div>
+
       <!-- Breweries table -->
       <div class="mt-4 overflow-x-auto">
         <table class="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -117,6 +153,7 @@
 <script setup lang="ts">
   import { computed, onMounted, ref } from "vue";
   import BreweryRow from "./BreweryRow.vue";
+  import BreweryChart from "./BreweryChart.vue";
   import { Brewery } from "../types/brewery";
   import { fetchBreweries } from "../api/breweryService";
 
@@ -139,6 +176,9 @@
   const groupBy = ref<keyof Brewery | undefined>(undefined);
   const nameFilter = ref<string>("");
   const typeFilter = ref<string>("all");
+
+  // Chart state
+  const chartType = ref<"bar" | "pie">("bar");
 
   // Get unique brewery types for the dropdown
   const breweryTypes = computed(() => {
