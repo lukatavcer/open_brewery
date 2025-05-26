@@ -3,22 +3,27 @@ import { Brewery } from "../types/brewery";
 // API configuration
 export const API_CONFIG = {
   // Set to true to use the Django backend, false to use the Open Brewery DB API directly
-  USE_DJANGO_BACKEND: false,
+  USE_DJANGO_BACKEND: true,
   // Django backend API URL
   DJANGO_API_URL: "http://localhost:8000/api/breweries/",
-  // Open Brewery DB API URL
+  // Open Brewery DB API URL (no longer used directly)
   OPEN_BREWERY_API_URL: "https://api.openbrewerydb.org/v1/breweries"
 };
 
 /**
- * Fetches brewery data from either the Django backend or the Open Brewery DB API
+ * Fetches brewery data from either the Django backend proxy or directly from the Open Brewery DB API
+ * When USE_DJANGO_BACKEND is true, it uses the backend proxy_api endpoint which forwards the request to the external API
  * @returns Promise with brewery data
  */
 export const fetchBreweries = async (): Promise<Brewery[]> => {
   try {
-    const apiUrl = API_CONFIG.USE_DJANGO_BACKEND 
-      ? API_CONFIG.DJANGO_API_URL 
-      : API_CONFIG.OPEN_BREWERY_API_URL;
+    let apiUrl;
+    if (API_CONFIG.USE_DJANGO_BACKEND) {
+      // Use the proxy_api endpoint when using Django backend
+      apiUrl = `${API_CONFIG.DJANGO_API_URL}proxy_api/`;
+    } else {
+      apiUrl = API_CONFIG.OPEN_BREWERY_API_URL;
+    }
 
     console.log(`Fetching breweries from: ${apiUrl}`);
     const response = await fetch(apiUrl);
