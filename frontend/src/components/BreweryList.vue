@@ -1,6 +1,20 @@
 <template>
   <div class="my-8">
-    <h2 class="text-2xl font-semibold mb-4 text-gray-800">Brewery List</h2>
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-semibold text-gray-800">Brewery List</h2>
+
+      <!-- Backend toggle switch -->
+      <div class="flex items-center space-x-2">
+        <span class="text-sm text-gray-600">API Source:</span>
+        <button 
+          @click="toggleBackend" 
+          class="px-3 py-1 text-sm rounded-md"
+          :class="useBackend ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'"
+        >
+          {{ useBackend ? 'Django Backend' : 'Open Brewery API' }}
+        </button>
+      </div>
+    </div>
 
     <div v-if="loading" class="p-4 text-center">Loading breweries...</div>
 
@@ -55,12 +69,20 @@
             </option>
           </select>
         </div>
-        <div class="flex items-end">
+        <div class="flex items-end space-x-2">
           <button
             @click="resetFilters"
             class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
             Reset Filters
+          </button>
+          <button
+            v-if="useBackend"
+            @click="syncWithBackend"
+            class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            :disabled="syncing"
+          >
+            {{ syncing ? 'Syncing...' : 'Sync with Backend' }}
           </button>
         </div>
       </div>
@@ -151,11 +173,22 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, ref } from "vue";
+  import { computed, onMounted, ref, watch } from "vue";
   import BreweryRow from "./BreweryRow.vue";
   import BreweryChart from "./BreweryChart.vue";
   import { Brewery } from "../types/brewery";
-  import { fetchBreweries } from "../api/breweryService";
+  import { fetchBreweries, syncBreweriesWithBackend, API_CONFIG } from "../api/breweryService";
+
+  // Use the API_CONFIG to determine if we're using the backend
+  const useBackend = ref<boolean>(API_CONFIG.USE_DJANGO_BACKEND);
+  const syncing = ref<boolean>(false);
+
+  // Watch for changes to API_CONFIG.USE_DJANGO_BACKEND
+  watch(() => API_CONFIG.USE_DJANGO_BACKEND, (newValue) => {
+    useBackend.value = newValue;
+    // Reload breweries when switching backends
+    loadBreweries();
+  });
 
   // State to store the brewery data
   const allBreweries = ref<Brewery[]>([]);
@@ -232,6 +265,31 @@
       error.value = err.message || "Failed to fetch breweries";
     } finally {
       loading.value = false;
+    }
+  };
+
+  // Function to toggle between backends
+  const toggleBackend = () => {
+    // Toggle the API_CONFIG setting
+    API_CONFIG.USE_DJANGO_BACKEND = !API_CONFIG.USE_DJANGO_BACKEND;
+    // useBackend will be updated by the watcher
+  };
+
+  // Function to sync breweries with the backend
+  const syncWithBackend = async () => {
+    if (!useBackend.value) return;
+
+    try {
+      syncing.value = true;
+      const result = await syncBreweriesWithBackend();
+      console.log(result.message);
+
+      // Reload breweries after syncing
+      await loadBreweries();
+    } catch (err: any) {
+      error.value = err.message || "Failed to sync breweries";
+    } finally {
+      syncing.value = false;
     }
   };
 
